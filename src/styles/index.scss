@@ -1,7 +1,107 @@
-@font-face {
-  font-family: 'Inter';
-  src: url('../fonts/Inter.ttf');
+//set background to dark grey
+html {
+  background-color: #000000;
 }
 
-@import 'variables';
-@import 'scaffolding';
+//style the grid layout
+.grid-container {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-gap: 10px;
+  background-color: #000000;
+  padding: 10px;
+  //make sure the grid doesn't go off the page
+  max-width: 100%;
+  //check if the grid is too big for the page
+  overflow: hidden;
+
+}
+
+//set button to the horizontal center bellow the canvas
+.button {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  background-color: #000000;
+  color: white;
+  font-size: 16px;
+  padding: 12px 24px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+//set the header to the center of the screen and make the font roboto and white
+h1 {
+  text-align: center;
+  //set the font to roboto
+  font-family: 'Roboto', sans-serif;
+  color: white;
+}
+
+//allign the button in center
+button {
+  
+  background-color: #1f1f1f;
+  color: white;
+  font-size: 16px;
+  padding: 12px 24px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  //center horizontally bellow the canvas
+  position: relative;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  //add drop shadow
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  //when the button is hovered over animate the button to a bigger size
+  &:hover {
+    //add transition time
+    transition: 0.5s;
+    background-color: #1f1f1f;
+    color: white;
+    font-size: 18px;
+    padding: 12px 24px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    box-shadow: 0 12px 16px 0 rgba(0, 0, 0, 0.24), 0 17px 50px 0 rgba(0, 0, 0, 0.19);
+  }
+  //when the button is clicked animate the button to a smaller size
+  &:active {
+    transition: 0.5s;
+    background-color: #1f1f1f;
+    color: white;
+    font-size: 14px;
+    padding: 12px 24px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    box-shadow: 0 12px 16px 0 rgba(0, 0, 0, 0.24), 0 17px 50px 0 rgba(0, 0, 0, 0.19);
+  }
+}
+
+//round canvas corners
+canvas {
+  border-radius: 5px;
+  //add drop shadow
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+//set header 2 to white and roboto font
+h2 {
+  text-align: center;
+  //set the font to roboto
+  font-family: 'Roboto', sans-serif;
+  color: white;
+}
+
+//if user is on mobile set the grid to be 1 column
+@media only screen and (max-width: 600px) {
+  .grid-container {
+    grid-template-columns: auto;
+  }
+}
