@@ -25,11 +25,19 @@ const ctx4 = canvas4.getContext('2d')
 ctx4.fillStyle = '#333'
 ctx4.fillRect(0, 0, canvas4.width, canvas4.height)
 
+const edgeMargin = 30
+
 //set all canvas widths to the half of the window width subtracting the margins
-canvas1.width = window.innerWidth / 2 - 20
-canvas2.width = window.innerWidth / 2 - 20
-canvas3.width = window.innerWidth / 2 - 20
-canvas4.width = window.innerWidth / 2 - 20
+canvas1.width = window.innerWidth / 2 - edgeMargin
+canvas2.width = window.innerWidth / 2 - edgeMargin
+canvas3.width = window.innerWidth / 2 - edgeMargin
+canvas4.width = window.innerWidth / 2 - edgeMargin
+
+//set all canvas heights to the half of the window height subtracting the margins
+canvas1.height = window.innerHeight / 2 - 20
+canvas2.height = window.innerHeight / 2 - 20
+canvas3.height = window.innerHeight / 2 - 20
+canvas4.height = window.innerHeight / 2 - 20
 
 //create a constant for how many blocks to generate
 const numblocks = 100
@@ -50,7 +58,7 @@ class Block {
 }
 
 //create a function to draw the blocks array on the canvas takes in the canvas and the blocks array
-function drawBlocks(canvas, ctx, blocks, activeElement = -1) {
+function drawBlocks(canvas, ctx, blocks, activeElement = -1, knownSorted = -1) {
   //loop through the blocks array
   //clear the canvas and set the background to dark grey
   ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -68,7 +76,18 @@ function drawBlocks(canvas, ctx, blocks, activeElement = -1) {
         blocks[i].width,
         blocks[i].height
       )
-    } else {
+    } 
+    //if the known sorted inex is equal to the current index color the block green
+    if (knownSorted == i) {
+      ctx.fillStyle = 'green'
+      ctx.fillRect(
+        (canvas.width / blocks.length) * i,
+        canvas.height - blocks[i].height,
+        blocks[i].width,
+        blocks[i].height
+      )
+    }
+    if (activeElement == i) {
       ctx.fillStyle = 'red'
       ctx.fillRect(
         (canvas.width / blocks.length) * i,
@@ -97,14 +116,14 @@ async function bubbleSort(blocks) {
 
     for (let j = 0; j < blocks.length; j++) {
       //if the block at the current index is greater than the block at the next index
-
+      
       if (blocks[i].height < blocks[j].height) {
         //swap the blocks
         let temp = blocks[i]
         blocks[i] = blocks[j]
         blocks[j] = temp
-        //draw the blocks with the active element being the one that is being swapped
-        drawBlocks(canvas1, ctx, blocks, j)
+        //draw the blocks
+        drawBlocks(canvas1, ctx, blocks1, j, i)
         //play frequency sound at the frequency of the block that is being swapped which is the height of the block
         await sleep(1)
       }
@@ -125,15 +144,15 @@ async function selectionSort(blocks) {
       if (blocks[j].height < blocks[minIndex].height) {
         //set the minIndex to the next index
         minIndex = j
+        //draw the blocks with the active element being the current index and the known sorted being the minIndex
+        drawBlocks(canvas2, ctx2, blocks2, minIndex, i)
+        await sleep(1)
       }
     }
     //swap the blocks
     let temp = blocks[i]
     blocks[i] = blocks[minIndex]
     blocks[minIndex] = temp
-    //draw the blocks with the active element being the one that is being swapped
-    drawBlocks(canvas2, ctx2, blocks, minIndex)
-    await sleep(1)
   }
   drawBlocks(canvas2, ctx2, blocks, -1)
 }
@@ -151,7 +170,7 @@ async function insertionSort(blocks) {
       blocks[j] = blocks[j - 1]
       blocks[j - 1] = temp
       //draw the blocks with the active element being the one that is being swapped
-      drawBlocks(canvas3, ctx3, blocks, j - 1)
+      drawBlocks(canvas3, ctx3, blocks, j - 1, i)
       await sleep(1)
       //decrement the j index
       j--
@@ -159,6 +178,71 @@ async function insertionSort(blocks) {
   }
   drawBlocks(canvas3, ctx3, blocks, -1)
 }
+
+//create a helper function called merge that takes in the blocks array and the left and right indices
+function merge(blocks, left, mid, right) {
+  
+  //create two temporary arrays
+  let leftarr =  []
+  let rightarr = []
+
+  //copy data to temp arrays
+  for (let i = left; i <= right; i++) {
+    leftarr[i - left] = blocks[i]
+  }
+  for (let i = mid + 1; i <= right; i++) {
+    rightarr[i - mid - 1] = blocks[i]
+  }
+
+  let indexofleft = 0
+  let indexofright = 0
+
+  let indexofmerged = left
+
+  //merge the temp arrays back into the blocks array
+  while (indexofleft < leftarr.length && indexofright < rightarr.length) {
+    if (leftarr[indexofleft].height < rightarr[indexofright].height) {
+      blocks[indexofmerged] = leftarr[indexofleft]
+      indexofleft++
+    } else {
+      blocks[indexofmerged] = rightarr[indexofright]
+      indexofright++
+    }
+    indexofmerged++
+  }
+  //copy the rest of the left array into the blocks array if there is any left
+  while (indexofleft < leftarr.length) {
+    blocks[indexofmerged] = leftarr[indexofleft]
+    indexofleft++
+    indexofmerged++
+  }
+  //copy the rest of the right array into the blocks array if there is any left
+  while (indexofright < rightarr.length) {
+    blocks[indexofmerged] = rightarr[indexofright]
+    indexofright++
+    indexofmerged++
+  }
+}
+
+
+//create a merge sort function that takes in the blocks array
+async function mergeSort(blocks, left, right) {
+  if (left < right) {
+    let mid = Math.floor((left + right) / 2)
+    //sort the left half of the array
+    await mergeSort(blocks, left, mid)
+    //sort the right half of the array
+    await mergeSort(blocks, mid + 1, right)
+    //merge the two halves
+    merge(blocks, left, mid, right)
+  } else {
+    //draw the blocks
+    drawBlocks(canvas4, ctx4, blocks, -1)
+    return
+  }
+  
+}
+
 
 
 //generate the blocks array
@@ -289,31 +373,31 @@ function resize() {
   //set all canvas widths to the half of the window width subtracting the margins
   //if the user is not on a mobile device
   if (window.innerWidth > 600) {
-    canvas1.width = window.innerWidth / 2 - 20
-    canvas2.width = window.innerWidth / 2 - 20
-    canvas3.width = window.innerWidth / 2 - 20
-    canvas4.width = window.innerWidth / 2 - 20
+    canvas1.width = window.innerWidth / 2 - edgeMargin
+    canvas2.width = window.innerWidth / 2 - edgeMargin
+    canvas3.width = window.innerWidth / 2 - edgeMargin
+    canvas4.width = window.innerWidth / 2 - edgeMargin
   }
   //if the user is on a mobile device
   else {
     //set the canvas width to the window width subtracting the margins
-    canvas1.width = window.innerWidth - 20
-    canvas2.width = window.innerWidth - 20
-    canvas3.width = window.innerWidth - 20
-    canvas4.width = window.innerWidth - 20
+    canvas1.width = window.innerWidth - edgeMargin
+    canvas2.width = window.innerWidth - edgeMargin
+    canvas3.width = window.innerWidth - edgeMargin
+    canvas4.width = window.innerWidth - edgeMargin
   }
 
   //if user is on mobile device set the canvas width to the window width subtracting the margins
   if (window.innerWidth < 600) {
-    canvas1.width = window.innerWidth - 20
-    canvas2.width = window.innerWidth - 20
-    canvas3.width = window.innerWidth - 20
-    canvas4.width = window.innerWidth - 20
+    canvas1.width = window.innerWidth - edgeMargin
+    canvas2.width = window.innerWidth - edgeMargin
+    canvas3.width = window.innerWidth - edgeMargin
+    canvas4.width = window.innerWidth - edgeMargin
     //set canvas height to the window height subtracting the margins
-    canvas1.height = (window.innerHeight * 2) / 3 - 20
-    canvas2.height = (window.innerHeight * 2) / 3 - 20
-    canvas3.height = (window.innerHeight * 2) / 3 - 20
-    canvas4.height = (window.innerHeight * 2) / 3 - 20
+    canvas1.height = (window.innerHeight * 2) / 5 - 20
+    canvas2.height = (window.innerHeight * 2) / 5 - 20
+    canvas3.height = (window.innerHeight * 2) / 5 - 20
+    canvas4.height = (window.innerHeight * 2) / 5 - 20
   }
   //loop through the blocks array and set the block width to the canvas width divided by the number of blocks and set the block height to the canvas height divided by the number of blocks
   updateBlockSize(blocks1, canvas1)
